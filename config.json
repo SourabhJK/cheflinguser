@@ -1,0 +1,11 @@
+{
+	"dbdata":{
+		"db":"mysql",
+		"username":"root",
+		"password":"password",
+		"dbname":"admin",
+		"ip":"localhost"
+	},
+	"testkey":"testing"
+	
+}
