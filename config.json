@@ -4,7 +4,7 @@
 		"username":"root",
 		"password":"password",
 		"dbname":"admin",
-		"ip":"localhost"
+		"ip":"127.0.0.1"
 	},
 	"testkey":"testing"
 	

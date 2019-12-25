@@ -1,11 +1,12 @@
 package handler
 
-import(
-	user "github.com/cheflinguser/chefling/usermanagement"
-	"net/http"
-	"fmt"
+import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/http"
+
+	user "github.com/cheflinguser/chefling/usermanagement"
 )
 
 func Signup(w http.ResponseWriter, req *http.Request) {
@@ -28,7 +29,7 @@ func Signup(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("SignUp: Not Able to Read SignUp Request Body")
 		return
-	}	
+	}
 
 	err = json.Unmarshal(signupBody, &userInfo)
 	if err != nil {
@@ -37,26 +38,23 @@ func Signup(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
-	
 	token, err := userInfo.SignUp()
 
 	if err != nil {
-		if err == user.UserExist{
+		fmt.Println("Error in signup:", err)
+		if err == user.UserExist {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode("User already exist")
-		}else{
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode("Please try again later")
 		}
 		return
 	}
 
-	
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(token)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(token)
 }
-
 
 func SignIn(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -69,7 +67,7 @@ func SignIn(w http.ResponseWriter, req *http.Request) {
 	case "OPTIONS":
 		w.WriteHeader(http.StatusOK)
 		return
-	}	
+	}
 	var UserInfo user.User
 	fmt.Println("Inside SignIn")
 	requestBody, err := ioutil.ReadAll(req.Body)
@@ -88,18 +86,16 @@ func SignIn(w http.ResponseWriter, req *http.Request) {
 
 	token, err := UserInfo.SignIn()
 
-	if err != nil{
-		if err == user.UserNotFound{
+	if err != nil {
+		if err == user.UserNotFound {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode("Username or password mismatch")
-		}else{
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode("Please try again later")
 		}
 		return
 	}
-
-
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(token)
@@ -117,40 +113,37 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 	case "OPTIONS":
 		w.WriteHeader(http.StatusOK)
 		return
-	}	
+	}
 	var (
 		UserInfo user.User
-		query = req.URL.Query()
+		query    = req.URL.Query()
 	)
 
-
-	if query["username"] == nil{
+	if query["username"] == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Username is expected as query param")
 	}
-	
-	UserInfo.Username = query["username"][0]	
+
+	UserInfo.Username = query["username"][0]
 	UserInfo.Password = req.Header.Get("password")
 
-	if UserInfo.Password == ""{
+	if UserInfo.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Password is expected in headers")
 	}
 
 	userDetails, err := UserInfo.Read()
 
-	if err != nil{
-		if err == user.UserNotFound{
+	if err != nil {
+		if err == user.UserNotFound {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode("Username or password mismatch")
-		}else{
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode("Please try again later")
 		}
 		return
 	}
-
-
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(userDetails)
@@ -168,28 +161,26 @@ func ProfileUpdate(w http.ResponseWriter, req *http.Request) {
 	case "OPTIONS":
 		w.WriteHeader(http.StatusOK)
 		return
-	}	
+	}
 	var (
-		userInfo user.User
-		query = req.URL.Query()
+		userInfo    user.User
+		query       = req.URL.Query()
 		userDetails = make(map[string]interface{})
 	)
 
-
-	if query["user"] == nil{
+	if query["user"] == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Username is expected as query param")
 	}
-		
+
 	userInfo.Username = query["user"][0]
 	userInfo.Password = req.Header.Get("password")
 
-	if userInfo.Password == ""{
+	if userInfo.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Password is expected in headers")
 	}
 
-	
 	requestBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -203,27 +194,21 @@ func ProfileUpdate(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode("ERROR: Error in Unmarshalling SignUp Request Body")
 		return
 	}
-	
+
 	err = userInfo.Update(userDetails)
 
-	if err != nil{
-		if err == user.UserNotFound{
+	if err != nil {
+		if err == user.UserNotFound {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode("Username or password mismatch")
-		}else{
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode("Please try again later")
 		}
 		return
 	}
 
-
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("User updated successfully")
 
 }
-
-
-
-

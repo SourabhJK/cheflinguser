@@ -1,9 +1,9 @@
 package db
 
 import (
+	log "github.com/Sirupsen/logrus"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	log "github.com/Sirupsen/logrus"
 
 	"time"
 )
@@ -29,30 +29,30 @@ func GetSession() *mgo.Session {
 	return session
 }
 
-func (mongo MongoDetails) Create(collection string, data interface{}) error{
+func (mongo MongoDetails) Create(collection string, data interface{}) error {
 	s := GetSession()
 	c := s.DB("automata").C(collection)
 	return c.Insert(data)
 }
 
-func (mongo MongoDetails) Read(collection string, findQuery map[string]interface{}) (interface{}, error){
+func (mongo MongoDetails) Read(collection string, findQuery map[string]interface{}) (interface{}, error) {
 	var data interface{}
 	s := GetSession()
 	c := s.DB("automata").C(collection)
-	err :=  c.Find(findQuery).All(&data)
+	err := c.Find(findQuery).All(&data)
 	return data, err
 }
 
-func (mongo MongoDetails) ReadOne(collection string, findQuery map[string]interface{}) (interface{}, error){
+func (mongo MongoDetails) ReadOne(collection string, findQuery map[string]interface{}) (interface{}, error) {
 	var data interface{}
 	s := GetSession()
 	c := s.DB("automata").C(collection)
-	err :=  c.Find(findQuery).One(&data)
+	err := c.Find(findQuery).One(&data)
 	return data, err
 }
 
-func (mongo MongoDetails) Update(collection string, selectQuery map[string]interface{}, updateQuery map[string]interface{}) error{
+func (mongo MongoDetails) Update(collection string, selectQuery map[string]interface{}, updateQuery map[string]interface{}) error {
 	s := GetSession()
 	c := s.DB("automata").C(collection)
-	return c.Update(selectQuery, bson.M{"$set":updateQuery})
+	return c.Update(selectQuery, bson.M{"$set": updateQuery})
 }

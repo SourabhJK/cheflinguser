@@ -1,22 +1,22 @@
 package router
 
-import(
-	"net/http"
-	"github.com/cheflinguser/handler"
+import (
 	"encoding/json"
-	jwt "github.com/dgrijalva/jwt-go"
+	"fmt"
+	"net/http"
 	"os"
+
 	"github.com/cheflinguser/config"
+	"github.com/cheflinguser/handler"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/context"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"fmt"
 )
 
-const JWT_KEY="secret"
+const JWT_KEY = "secret"
 
-
-func Route(){
+func Route() {
 	fmt.Println("Route....")
 	r := mux.NewRouter()
 
@@ -28,12 +28,11 @@ func Route(){
 		json.NewEncoder(w).Encode("This is a catch-all route")
 	})
 
-	
-	router.HandleFunc("/user/signup", handler.Signup).Methods("POST", "OPTIONS")
-	router.HandleFunc("/user/signin", handler.SignIn).Methods("POST", "OPTIONS")
-	router.HandleFunc("/user/profile", handler.Profile).Methods("GET", "OPTIONS") 
+	r.HandleFunc("/user/signup", handler.Signup).Methods("POST", "OPTIONS")
+	r.HandleFunc("/user/signin", handler.SignIn).Methods("POST", "OPTIONS")
+	router.HandleFunc("/user/profile", handler.Profile).Methods("GET", "OPTIONS")
 	//Can be kept as /user/profile with the method as PUT
-	router.HandleFunc("/user/profile/update", handler.ProfileUpdate).Methods("PUT", "OPTIONS") 
+	router.HandleFunc("/user/profile/update", handler.ProfileUpdate).Methods("PUT", "OPTIONS")
 
 	http.ListenAndServe(":8090", handlers.LoggingHandler(os.Stdout, r))
 	fmt.Println("Router started and listening at port 8090")
@@ -57,46 +56,42 @@ func ValidateMiddleware(next http.Handler) http.Handler {
 		testToken := config.GetConfig().TestToken
 
 		authorizationHeader := req.Header.Get("Authorization")
-		
 
-		if authorizationHeader == ""{
+		if authorizationHeader == "" {
 			json.NewEncoder(w).Encode("An authorization header is required")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		if authorizationHeader == testToken{
+		if authorizationHeader == testToken {
 			next.ServeHTTP(w, req)
 			return
 		}
 
-		
-
-			token, error := jwt.Parse(authorizationHeader, func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("There was an error")
-				}
-				return []byte(JWT_KEY), nil
-			})
-			if error != nil {
-
-				if error.Error() == "Token is expired" {
-					w.WriteHeader(498)
-				}
-
-				json.NewEncoder(w).Encode("Token is expired. Login one more time")
-				return
+		token, error := jwt.Parse(authorizationHeader, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("There was an error")
 			}
-			if token.Valid {
-				context.Set(req, "decoded", token.Claims)
-				next.ServeHTTP(w, req)
-				return
-			} else {
-				json.NewEncoder(w).Encode("Invalid authorization token")
+			return []byte(JWT_KEY), nil
+		})
+		if error != nil {
+
+			if error.Error() == "Token is expired" {
 				w.WriteHeader(498)
-				return
 			}
 
-		
+			json.NewEncoder(w).Encode("Token is expired. Login one more time")
+			return
+		}
+		if token.Valid {
+			context.Set(req, "decoded", token.Claims)
+			next.ServeHTTP(w, req)
+			return
+		} else {
+			json.NewEncoder(w).Encode("Invalid authorization token")
+			w.WriteHeader(498)
+			return
+		}
+
 	})
 }

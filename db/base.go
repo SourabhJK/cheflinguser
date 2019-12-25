@@ -1,33 +1,31 @@
 package db
 
-import(
+import (
 	"github.com/cheflinguser/config"
 )
 
-
 var DBOpt DBOperation
 
-
-func InjectDB(){
+func InjectDB() {
 	conf := config.GetConfig()
 
-	switch conf.DbData.Dbtype{
+	switch conf.DbData.Dbtype {
 	case MONGODB:
-		var mongo = MongoDetails{
-			Username: conf.DbData.Username,
-			Password: conf.DbData.Password,
-			IP: conf.DbData.IP,
+		mongoDetails = MongoDetails{
+			Username:     conf.DbData.Username,
+			Password:     conf.DbData.Password,
+			IP:           conf.DbData.IP,
 			DatabaseName: conf.DbData.DbName,
 		}
-		DBOpt.DB = mongo
-	// case MYSQL:
-	// 	var mysql = MySqlDetails{
-	// 		Username: conf.DbData.Username,
-	// 		Password: conf.DbData.Password,
-	// 		IP: conf.DbData.IP,
-	// 		DatabaseName: conf.DbData.DbName,
-	// 	}
-	// 	DBOpt.DB = mysql
-
+		DBOpt.DB = mongoDetails
+	case MYSQL:
+		mysqlDetails = MySqlDetails{
+			Username:     conf.DbData.Username,
+			Password:     conf.DbData.Password,
+			IP:           conf.DbData.IP,
+			DatabaseName: conf.DbData.DbName,
+		}
+		DBOpt.DB = mysqlDetails
+		EstablishMysqlSession()
 	}
 }

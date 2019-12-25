@@ -1,16 +1,23 @@
 package main
 
-import(
+import (
+	userm "github.com/cheflinguser/chefling/usermanagement"
 	"github.com/cheflinguser/config"
+	"github.com/cheflinguser/db"
 	"github.com/cheflinguser/router"
 	"github.com/cheflinguser/utilities"
-	"github.com/cheflinguser/db"
 )
 
-func main(){
+func main() {
 	config.ReadConfig()
 	utilities.GetLogger()
 	db.InjectDB()
+
+	conf := config.GetConfig()
+	if conf.DbData.Dbtype == db.MYSQL {
+		userm.UpdateUserModels()
+	}
+
 	router.Route()
 
 }
